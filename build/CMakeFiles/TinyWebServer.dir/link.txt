@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -shared -Wl,-soname,libTinyWebServer.so -o /home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/lib/libTinyWebServer.so CMakeFiles/TinyWebServer.dir/tinyWebserver/log/log.cpp.o 

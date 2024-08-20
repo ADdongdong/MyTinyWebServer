@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/build",
+  "command": "/usr/bin/c++ -DTinyWebServer_EXPORTS -I/home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/. -fPIC -o CMakeFiles/TinyWebServer.dir/tinyWebserver/log/log.cpp.o -c /home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/tinyWebserver/log/log.cpp",
+  "file": "/home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/tinyWebserver/log/log.cpp",
+  "output": "CMakeFiles/TinyWebServer.dir/tinyWebserver/log/log.cpp.o"
+},
+{
+  "directory": "/home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/build",
+  "command": "/usr/bin/c++  -I/home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/.  -o CMakeFiles/test_log.dir/test/testlog.cpp.o -c /home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/test/testlog.cpp",
+  "file": "/home/hahadong/08_CPP_and_C_project/02_webserver/03_myTinyWebServer/test/testlog.cpp",
+  "output": "CMakeFiles/test_log.dir/test/testlog.cpp.o"
+}
+]
