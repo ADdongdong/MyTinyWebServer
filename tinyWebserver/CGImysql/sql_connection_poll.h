@@ -10,6 +10,7 @@
 #include <mutex>
 #include <semaphore> // 信号量sem
 #include "../log/log.h"
+#include "../Semaphore.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ private:
     mutex m_mutex; // 定义互斥量
 
     list<MYSQL *> connList; // 链接池
-    // 信号量定义
+    mytinyWebserver::Semaphore reverse; // 定义信号量
 
 public:
     string m_url; // 主机地址
