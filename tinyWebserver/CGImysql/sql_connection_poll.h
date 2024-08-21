@@ -48,4 +48,13 @@ public:
     int m_close_log; // 日志开关
 };
 
+
+// RAII风格代码编写
+class connectionRAII{
+public:
+    connectionRAII(MYSQL **con, connection_pool *connPool) {
+
+    }
+};
+
 #endif

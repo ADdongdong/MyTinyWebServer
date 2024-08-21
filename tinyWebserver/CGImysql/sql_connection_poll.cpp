@@ -99,7 +99,32 @@ bool connection_pool::ReleaseConnection(MYSQL* con) {
 void connection_pool::DestroyPool(){
     // 使用RAII
     std::lock_guard<std::mutex> lock(m_mutex);
-
-
+    if (connList.size() > 0) {
+        list<MYSQL *>::iterator it;
+        for (it = connList.begin(); it != connList.end(); ++it) {
+            // 关闭所有数据库连接
+            MYSQL *con = *it;
+            mysql_close(con);
+        }
+        m_CurConn = 0;
+        m_FreeConn = 0;
+        connList.clear(); // 清空链表（连接池）
+    }
 }
+
+/**
+ *@brief 获取当前空闲的链接数
+ */
+int connection_pool::GetFreeConn()
+{
+    return this->m_FreeConn;
+}
+
+/**
+ *@brief 析构函数，清空连接池
+ */
+connection_pool::~connection_pool() {
+    DestroyPool();
+}
+
 
