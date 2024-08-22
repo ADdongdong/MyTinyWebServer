@@ -127,4 +127,20 @@ connection_pool::~connection_pool() {
     DestroyPool();
 }
 
+/**
+ *@brief 构造函数，获取到一个线程池的链接。
+         在离开该代码段的时候，调用析构函数自动释放该连接。
+ *
+ */
+connectionRAII::connectionRAII(MYSQL **SQL, connection_pool *connPool) {
+    // 从连接池中获取到一个链接
+    *SQL = connPool->GetConnection();
 
+    conRAII = *SQL;
+    poolRAII = connPool;
+}
+
+connectionRAII::~connectionRAII() {
+    // 释放当前链接
+    poolRAII->ReleaseConnection(conRAII);
+}

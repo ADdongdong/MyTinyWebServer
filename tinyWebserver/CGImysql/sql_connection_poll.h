@@ -52,9 +52,13 @@ public:
 // RAII风格代码编写
 class connectionRAII{
 public:
-    connectionRAII(MYSQL **con, connection_pool *connPool) {
-
-    }
+    // 构造函数
+    connectionRAII(MYSQL **con, connection_pool *connPool);
+    // 析构函数
+    ~connectionRAII();
+private:
+    MYSQL *conRAII;
+    connection_pool *poolRAII;
 };
 
 #endif
