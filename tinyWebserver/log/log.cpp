@@ -2,10 +2,15 @@
 
 Log::Log(/* args */)
 {
+    m_count = 0;
+    m_is_async = false;
 }
 
 Log::~Log()
 {
+    if (m_fp != NULL) {
+        fclose(m_fp);
+    }
 }
 
 // 初始化static的单例对象, static要在类外初始化
@@ -24,7 +29,7 @@ bool Log::init(const char *filename, int close_log, int log_buf_size , int split
         m_log_queue = new block_queue<std::string>(max_queue_size);
         pthread_t tid;
         // flush_log_thread为回调函数，这里表示创建线程异步写日志
-        // 创建异步写日志的线程
+        // 创建异步写日志的线程, 创建另一个线程专门用来写日志
         pthread_create(&tid, NULL, flush_log_thread, NULL);
     }
 
@@ -44,7 +49,7 @@ bool Log::init(const char *filename, int close_log, int log_buf_size , int split
     if (p == NULL){
         snprintf(log_full_name, 255, "%d_%02d_%02d_%s", my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, filename);
     } else {
-        strcpy(log_name, p+ 1);
+        strcpy(log_name, p + 1);
         strncpy(dir_name, filename, p - filename + 1);
         snprintf(log_full_name, 255, "%s%d_%02d_%02d_%s", dir_name, my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, log_name);
     }
@@ -86,7 +91,11 @@ void Log::writeLog(int level, const char *format, ...){
         break;
     }
 
+
     // 每写入一次log,就对m_count++, m_split_lines表示最大行数
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_count++; // 这里如果没有m_count++则会产生两个log文件，并且，log文件多了以后也不会创建新的log文件
+
     // 每日创建新的log文件
     if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0){
         char new_log[256] = {0};
@@ -108,12 +117,13 @@ void Log::writeLog(int level, const char *format, ...){
         m_fp = fopen(new_log, "a"); // 文件名为new_log的文件
     }
 
-    m_mutex.unlock();
+    lock.unlock();
 
     va_list valst;
     va_start(valst, format);
 
     std::string log_str;
+    lock.lock();
 
     // 写入具体的时间内容格式
     int n = snprintf(m_buf, 48, "%d-%02d-%02d %02d:%-2d:%02d.%06ld %s",
@@ -126,23 +136,21 @@ void Log::writeLog(int level, const char *format, ...){
     log_str = m_buf;
 
     // 循环数组实现阻塞队列, 完成异步写日志部分
-    m_mutex.unlock();
+    lock.unlock();
 
-    // 如果标记为异步写日志，并且，阻塞队列没满，那么就将日志信息加入到阻塞队列中，等待写日志
+   // 如果标记为异步写日志，并且，阻塞队列没满，那么就将日志信息加入到阻塞队列中，等待写日志
     if (m_is_async && !m_log_queue->full()){
         m_log_queue->push(log_str);
     } else {
-        // 否则，直接将日志写入
-        m_mutex.lock();
+        // 否则，直接将日志写入, 也就是说，如果日志队列满了，也进入同步写日志
+        std::lock_guard<std::mutex> lock(m_mutex);
         fputs(log_str.c_str(), m_fp);
-        m_mutex.unlock();
     }
 
     va_end(valst);
 }
 
 void Log::flush(void){
-    m_mutex.lock();
+    std::lock_guard<std::mutex> lock(m_mutex);
     fflush(m_fp);
-    m_mutex.unlock();
 }

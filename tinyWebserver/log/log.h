@@ -49,7 +49,7 @@ public:
      */
     void writeLog(int level, const char *format, ...);
 
-    // 定义异步写日志回调函数
+    // 定义异步写日志回调函数(返回值是指针的函数)
     static void *flush_log_thread(void *args){
         Log::getInstance()->async_write_log();
     }
@@ -70,10 +70,9 @@ private:
         // 这里是将阻塞队列的队头元素写入到string_log中
         // 再将string_log写入到m_fp文件中
         while(m_log_queue->pop(string_log)) {
-            m_mutex.lock();
+            std::lock_guard<std::mutex> lock(m_mutex);
             // 将log写入文件中
             fputs(string_log.c_str(), m_fp);
-            m_mutex.unlock();
         }
     }
 private:

@@ -21,8 +21,8 @@ void test_log() {
 }
 
 int main(){
-    // 初始化日志系统
-    if (Log::getInstance()->init("./test_log", 0, 2000, 800000, 800)){
+    // 初始化日志系统, 最后一个参数设置为0，表示为同步写日志
+    if (Log::getInstance()->init("./test_log", 0, 2000, 800000, 0)){
         std::cout << "Log system initialized successfully" << std::endl;
     } else {
         std::cerr <<"Faile to initialized log system" <<std::endl;
@@ -33,19 +33,21 @@ int main(){
 
     // 测试同步日志
     std::cout << "Testing synchronous logging:" <<std::endl;
+    LOG_INFO("同步日志写入");
     test_log();
 
     // 等待一秒钟，确保同步日志已经写入
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // 测试异步日志
-    std::cout << "Testing asynchronous logging:" << std::endl;
-
-    // 创建一个线程来异步写日志
-    pthread_t pid;
-    pthread_create(&pid, NULL, Log::flush_log_thread, NULL);
-
-    // 再次调用日志测试哈数
+    // 测试异步写入日志 这里设置了最后一个参数为800，表示这就是异步日志
+    if (Log::getInstance()->init("./test_log", 0, 2000, 800000, 800)){
+        std::cout << "Log system initialized successfully" << std::endl;
+    } else {
+        std::cerr <<"Faile to initialized log system" <<std::endl;
+        return 1;
+    }
+    // 再次调用日志测试函数数
+    LOG_INFO("异步日志写入");
     test_log();
 
     // 等待异步日志线程完成

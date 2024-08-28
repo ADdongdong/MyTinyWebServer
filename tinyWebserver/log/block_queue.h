@@ -17,6 +17,7 @@
 #include <condition_variable> // 条件变量
 #include <sys/time.h>
 #include <chrono>
+#include <vector>
 
 template <class T>
 class block_queue
@@ -26,98 +27,77 @@ private:
 public:
 
     // 初始化队列
-    block_queue(int max_size = 1000) {
-        if (max_size <= 0) {
-            exit(-1);
-        }
-
-        m_max_size = max_size;
-        m_array = new T[max_size];
-        m_size = 0;
-        m_front = -1;
-        m_back = -1;
+    block_queue(int max_size = 1000) 
+        : m_max_size(max_size), m_array(max_size), m_size(0), m_front(0), m_back(0){
+            if (max_size <= 0) {
+                throw std::invalid_argument("Queue size must be positive");
+            }
     }
+
+    // 析构
+    ~block_queue(){
+        // 这里使用了vector，所以，析构的时候什么都不用做了，vector会帮我们析构
+    }
+
 
     void clear(){
-        m_mutex.lock();
+        std::lock_guard<std::mutex> lock(m_mutex);
         m_size = 0;
-        m_front = -1;
-        m_back = -1;
-        m_mutex.unlock();
+        m_front = 0;
+        m_back = 0;
     }
 
-    ~block_queue(){
-        m_mutex.lock();
-        if (m_array != NULL) {
-            delete [] m_array;
-        }
-        m_mutex.unlock();
-    }
 
     // 判断是否队满
     bool full() {
-        m_mutex.lock();
+        std::unique_lock<std::mutex> lock(m_mutex);
         if (m_size >= m_max_size) {
-            m_mutex.unlock();
+            lock.unlock();
             return true;
         }
-        m_mutex.unlock();
         return false;
     }
 
     // 判断是否队空
     bool empty(){
-        m_mutex.lock();
+        std::unique_lock<std::mutex> lock(m_mutex);
         if (0 == m_size) {
-            m_mutex.unlock();
+            lock.unlock();
             return true;
         }
-        m_mutex.unlock();
         return false;
     }
 
     // 返回队首元素, 返回值作为参数传出
     bool front(T &value){
-        m_mutex.lock();
+        std::unique_lock<std::mutex> lock(m_mutex);
         if (0 == m_size){
-            m_mutex.unlock();
+            lock.unlock();
             return false;
         }
         value = m_array[m_front];
-        m_mutex.unlock();
         return true;
     }
 
-    // 返回对尾元素
+    // 返回队列尾元素
     bool back(T &value) {
-        m_mutex.lock();
-        if (0 == m_size) {
-            m_mutex.unlock();
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (m_size == 0){
             return false;
         }
         value = m_array[m_back];
-        m_mutex.unlock();
         return true;
     }
 
     // 返回当前队列列长度
     int size(){
-        int tmp = 0;
-        m_mutex.lock();
-        tmp = m_size;
-
-        m_mutex.unlock();
-        return tmp;
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_size;
     }
 
     // 返回队列的最大长度
     int max_size(){
-        int tmp = 0;
-        m_mutex.lock();
-        tmp = m_size;
-
-        m_mutex.unlock();
-        return tmp;
+        return m_max_size;
     }
 
     // 当往队列添加元素，需要将所有使用队列的线程先唤醒
@@ -133,7 +113,7 @@ public:
         m_back = (m_back + 1) % m_max_size;
         m_array[m_back] = item;
         m_size++;
-        // notify_all唤醒所有等待在这个条件变量上的线程。
+        // notify_all唤醒所有等待在这个条件变量上的线程(其实只有一个线程)。
         // 调用这个函数以后，所有等待线程都会被唤醒，从阻塞态变道就绪态，等待调度器安排执行
         m_cond.notify_all();
         return true;
@@ -195,7 +175,7 @@ private:
     std::mutex m_mutex;
     std::condition_variable m_cond;
 
-    T* m_array;
+    std::vector<T>  m_array;
     int m_size;
     int m_max_size;
     int m_front;
