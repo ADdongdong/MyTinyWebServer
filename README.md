@@ -1,5 +1,11 @@
 # MyTinyWebServer
 c++11  and cmake for tinyWebServer
+* 使用CMake构建
+* 所有模块放在tinyWebserve目录下
+* 所有测试程序放在test目录下， 可执行文件放在bin目录下
+* 日志模块可选择同步/异步写入日志
+* 数据库连接池模块，底层为链表，为了实现用户账户密码登录，自定义信号量保证数据库连接池在多线程使用中的线程安全
+* 
 
 ## log日志模块
 
@@ -8,3 +14,12 @@ c++11  and cmake for tinyWebServer
 > 异步日志只要检测到队列不空，就持续调用`pop`将队列中的日志信息异步写入到日志文件中。
 
 ![日志模块实现逻辑 excalidraw](https://github.com/user-attachments/assets/fe3e560f-d3dd-4c3b-b66d-286e48740df7)
+
+## 数据库连接池模块
+
+> 数据库连接池底层使用stl::list实现
+> 自制Semphore使用std::condition_vairable和std::mutex实现, Semphore用来实现对数据库连接池链接的线程同步
+
+![数据库连接池模块](https://github.com/user-attachments/assets/551c1317-60e4-4984-8882-2618a4a263b1)
+
+## 
