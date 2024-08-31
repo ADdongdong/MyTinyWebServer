@@ -17,8 +17,8 @@ c++11  and cmake for tinyWebServer
 
 ## 数据库连接池模块
 
-> 数据库连接池底层使用stl::list实现
-> 自制Semphore使用std::condition_vairable和std::mutex实现, Semphore用来实现对数据库连接池链接的线程同步
+* 数据库连接池底层使用stl::list实现
+* 自制Semphore使用std::condition_vairable和std::mutex实现, Semphore用来实现对数据库连接池链接的线程同步。
 
 ![数据库连接池模块](https://github.com/user-attachments/assets/551c1317-60e4-4984-8882-2618a4a263b1)
 
