@@ -13,7 +13,7 @@ c++11  and cmake for tinyWebServer
 > 在异步日志中，实现了阻塞队列，在写入日志的时候，先将日志信息放入阻塞队列中，
 > 异步日志只要检测到队列不空，就持续调用`pop`将队列中的日志信息异步写入到日志文件中。
 
-![日志模块实现逻辑 excalidraw](https://github.com/user-attachments/assets/526995ae-cbd8-4612-b6f0-1b2c8e31ebda)
+![日志模块实现逻辑 excalidraw|500](https://github.com/user-attachments/assets/526995ae-cbd8-4612-b6f0-1b2c8e31ebda)
 
 
 ## 数据库连接池模块
